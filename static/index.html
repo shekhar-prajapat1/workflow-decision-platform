@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Workflow Decision System</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:white;
+padding:30px;
+border-radius:10px;
+width:450px;
+box-shadow:0px 4px 12px rgba(0,0,0,0.2);
+}
+
+input, select{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:15px;
+background:#007BFF;
+color:white;
+border:none;
+border-radius:5px;
+cursor:pointer;
+font-size:16px;
+}
+
+button:hover{
+background:#0056b3;
+}
+
+#result{
+margin-top:20px;
+font-weight:bold;
+}
+
+.error{
+color:red;
+}
+
+.success{
+color:green;
+}
+
+.hidden{
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Workflow Decision System</h2>
+
+<label>Select Workflow</label>
+
+<select id="workflow" onchange="updateFields()">
+
+<option value="loan_approval">Loan Approval</option>
+<option value="vendor_approval">Vendor Approval</option>
+<option value="employee_onboarding">Employee Onboarding</option>
+
+</select>
+
+<!-- LOAN FIELDS -->
+
+<div id="loan_fields">
+
+<input id="amount" placeholder="Loan Amount">
+
+<input id="credit_score" placeholder="Credit Score">
+
+</div>
+
+
+<!-- VENDOR FIELDS -->
+
+<div id="vendor_fields" class="hidden">
+
+<input id="vendor_rating" placeholder="Vendor Rating">
+
+<input id="contract_value" placeholder="Contract Value">
+
+<input id="years_in_business" placeholder="Years In Business">
+
+<input id="vendor_blacklisted" placeholder="Vendor Blacklisted (true/false)">
+
+</div>
+
+
+<!-- EMPLOYEE FIELDS -->
+
+<div id="employee_fields" class="hidden">
+
+<input id="background_check" placeholder="Background Check (true/false)">
+
+<input id="experience_years" placeholder="Experience Years">
+
+<input id="education_level" placeholder="Education Level (1-5)">
+
+<input id="previous_company_verified" placeholder="Previous Company Verified (true/false)">
+
+</div>
+
+
+<button onclick="submitData()">Submit</button>
+
+<div id="result"></div>
+
+</div>
+
+
+<script>
+
+function updateFields(){
+
+let workflow=document.getElementById("workflow").value
+
+document.getElementById("loan_fields").classList.add("hidden")
+document.getElementById("vendor_fields").classList.add("hidden")
+document.getElementById("employee_fields").classList.add("hidden")
+
+if(workflow==="loan_approval"){
+document.getElementById("loan_fields").classList.remove("hidden")
+}
+
+if(workflow==="vendor_approval"){
+document.getElementById("vendor_fields").classList.remove("hidden")
+}
+
+if(workflow==="employee_onboarding"){
+document.getElementById("employee_fields").classList.remove("hidden")
+}
+
+}
+
+
+async function submitData(){
+
+let workflow=document.getElementById("workflow").value
+
+let payload={workflow:workflow}
+
+if(workflow==="loan_approval"){
+
+payload.amount=parseInt(document.getElementById("amount").value)
+payload.credit_score=parseInt(document.getElementById("credit_score").value)
+
+}
+
+if(workflow==="vendor_approval"){
+
+payload.vendor_rating=parseInt(document.getElementById("vendor_rating").value)
+payload.contract_value=parseInt(document.getElementById("contract_value").value)
+payload.years_in_business=parseInt(document.getElementById("years_in_business").value)
+payload.vendor_blacklisted=document.getElementById("vendor_blacklisted").value==="true"
+
+}
+
+if(workflow==="employee_onboarding"){
+
+payload.background_check=document.getElementById("background_check").value==="true"
+payload.experience_years=parseInt(document.getElementById("experience_years").value)
+payload.education_level=parseInt(document.getElementById("education_level").value)
+payload.previous_company_verified=document.getElementById("previous_company_verified").value==="true"
+
+}
+
+
+let response = await fetch("/process",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify(payload)
+
+})
+
+let data = await response.json()
+
+let resultDiv=document.getElementById("result")
+
+if(data.detail){
+
+resultDiv.innerHTML="<span class='error'>Error: "+data.detail+"</span>"
+
+}else{
+
+resultDiv.innerHTML=
+"<span class='success'>"+
+"Request ID: "+data.request_id+
+"<br>Workflow: "+data.workflow+
+"<br>Status: "+data.status+
+"<br>Reason: "+data.reason+
+"</span>"
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
